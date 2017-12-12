@@ -142,7 +142,7 @@
         });
 
         function showBackgroundOptions(){
-            document.getElementById("content").innerHTML =  " <select id=\"timer\" onchange=\"setTimer()\"><option value=\"1\">1s</option><option value=\"2\">2s</option><option value=\"5\">5s</option><option value=\"10\">10s</option><option value=\"15\">15s</option><option value=\"20\">20s</option><option value=\"30\">30s</option><option value=\"60\">60s</option><option value=\"120\">2min</option><option value=\"300\">5min</option><option value=\"600\">10min</option><option value=\"1800\">30min</option></select><br><button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#myModal\">My pictures / Upload pictures</button>" ;
+            document.getElementById("content").innerHTML =  " <p style=\"display: inline-block\">Transition time:&nbsp;</p><select id=\"timer\" onchange=\"setTimer()\"><option value=\"1\">1s</option><option value=\"2\">2s</option><option value=\"5\">5s</option><option value=\"10\">10s</option><option value=\"15\">15s</option><option value=\"20\">20s</option><option value=\"30\">30s</option><option value=\"60\">60s</option><option value=\"120\">2min</option><option value=\"300\">5min</option><option value=\"600\">10min</option><option value=\"1800\">30min</option></select><br><button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#myModal\">My pictures / Upload pictures</button>" ;
         }
 
         function showSettingsOptions(){
@@ -170,7 +170,7 @@
                 type: 'POST',
                 data: json,
                 success: function(data) {
-                  console.log(data);
+
                 }
               });   
         }

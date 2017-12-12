@@ -10,6 +10,9 @@ global.jQuery = global.$ = require('jquery');
 var http = require('http').Server(app);
 var rhttp = require('http');
 
+var config = JSON.parse(fs.readFileSync('config.json'), 'utf-8');
+var bricks = JSON.parse(fs.readFileSync('bricks.json'), 'utf-8');
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/public')); //Serves resources from public folder
@@ -37,8 +40,6 @@ function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
 }
 
-var config = JSON.parse(fs.readFileSync('config.json'), 'utf-8');
-
 function getImgData(){
 var imgData = [];
 fs.readdirSync(imgsFolder).forEach(file => {
@@ -53,15 +54,20 @@ function isWebsite(url){
 
 function writeChangeToConfig(){
     var confStr = JSON.stringify(config);
-    console.log(confStr);
     fs.writeFile('config.json', confStr, (err) => {
       if (err) throw err;
-      console.log('The file has been saved!');
+    });
+}
+
+function writeChangeToBricks(){
+    var brickStr = JSON.stringify(bricks);
+    fs.writeFile('bricks.json', brickStr, (err) => {
+       if (err) throw err; 
     });
 }
 
 app.get('/', (req, res) => {
-     res.render('pages/index', {data:getImgData(), config: config});
+     res.render('pages/index', {data:getImgData(), config: config, bricks:bricks});
 });
 
 app.get('/bg', (req, res)=>{
@@ -101,6 +107,20 @@ app.post('/search', (req,res) =>{
 app.post("/timer", function(req, res) {
     config.timer = req.body.timer;
     writeChangeToConfig();
+});
+
+app.post("/bricks", function(req, res){
+    console.log("POSTING BRICKS");
+    
+    if(bricks.bricks == req.body.bricks){
+        console.log("BREAKING BRICKS");
+        return;
+    } else {
+        console.log("WRITING BRICKS");
+        bricks.bricks = req.body.bricks;
+        writeChangeToBricks();
+    }
+
 });
 
 //app.use('/images', express.static(__dirname + '/Images'));
