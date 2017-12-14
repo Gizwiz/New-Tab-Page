@@ -110,17 +110,13 @@ app.post("/timer", function(req, res) {
 });
 
 app.post("/bricks", function(req, res){
-    console.log("POSTING BRICKS");
-    
-    if(bricks.bricks == req.body.bricks){
-        console.log("BREAKING BRICKS");
-        return;
-    } else {
-        console.log("WRITING BRICKS");
-        bricks.bricks = req.body.bricks;
-        writeChangeToBricks();
-    }
+    bricks.bricks = req.body.bricks;
+    writeChangeToBricks();
+});
 
+app.post("/bookmark", function(req, res){
+    bricks.bricks.push(req.body.brick);
+    writeChangeToBricks();
 });
 
 //app.use('/images', express.static(__dirname + '/Images'));
