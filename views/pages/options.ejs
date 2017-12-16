@@ -163,8 +163,8 @@
 
     <script>
 
-        function uploadImages(){
-            $('#frmUploader').submit(function(e){
+        function uploadImages() {
+            $('#frmUploader').submit(function (e) {
                 console.log(e);
             });
         }
@@ -191,7 +191,7 @@
             var time = <%= config.timer %>;
             time = (time / 1000);
             document.getElementById("timer").value = time;
-            
+
         });
 
         function setTimer() {

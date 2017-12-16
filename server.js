@@ -117,12 +117,26 @@ app.post("/bookmark", function (req, res) {
     writeChangeToBricks();
 });
 
+app.post("/editBookmark", function (req, res) {
+
+});
+
 app.post("/remove", function (req, res) {
     for (var i = 0; i < req.body.selected.length; i++) {
         //delete selected image synced
         fs.unlinkSync("public/" + req.body.selected[i]);
     }
     res.send({ data: getImgData() });
+});
+
+app.post("/removeBrick", function (req, res) {
+    bricks.bricks.splice(req.body.index, 1);
+    writeChangeToBricks();
+    res.send({ bricks: bricks });
+});
+
+app.get("/data/bricks", function (req, res) {
+    res.send({ bricks: bricks });
 });
 
 http.listen(1337, () => {

@@ -31,7 +31,7 @@
                     });
                 },
                 error: function () {
-                    console.log(<% bricks.bricks %>);
+
                 }
             });
         }
@@ -65,8 +65,6 @@
             var monthName = month[today.getMonth()];
             var year = today.getFullYear();
 
-
-
             document.getElementById("time").innerHTML = hh + ":" + mm;
             document.getElementById("date").innerHTML = day + " " + monthName + " " + year;
             var t = setTimeout(startClock, 500);
@@ -76,12 +74,14 @@
             if (i < 10) { i = "0" + i };
             return i;
         }
+
         function r(f) { /in/.test(document.readyState) ? setTimeout('r(' + f + ')', 9) : f() }
         r(function () {
             startClock();
 
             setRandomSelectedCircle();
 
+            document.getElementById("search").focus();
 
             $('.gridly').gridly({
                 base: 20, // px 
@@ -114,7 +114,6 @@
                     mouseTimeout = setTimeout(function () {
                         mouseStatus = 'longDown';
                         reorderingBricks = true;
-                        console.log(reorderingBricks);
                     }, 100);
                 }, false);
                 bricks[i].addEventListener("mouseup", function () {
@@ -122,7 +121,6 @@
                     setTimeout(function () {
                         mouseStatus = 'up';
                         reorderingBricks = false
-                        console.log("back up");
                     }, 500)
 
                 }, false);
@@ -135,11 +133,6 @@
             $('.circle').removeClass('selectedCircle');
             var selected = Math.floor((Math.random() * $('.circle').length));
             $($('.circle').get(selected)).addClass('selectedCircle');
-        }
-
-
-        function submitBookmarkForm() {
-            document.getElementById("bookmarkForm").submit();
         }
 
         function isEquivalent(a, b) {
@@ -209,10 +202,11 @@
 
         function hideWidgetPanel() {
             $(".expandable").hide('slide', { direction: 'right' }, 500);
+            endEditingWidgets();
         }
 
         function redirect(url) {
-            console.log(reorderingBricks);
+            console.log("redir");
             if (reorderingBricks)
                 return
             else
@@ -232,9 +226,104 @@
                 data: { "brick": brick },
             });
 
-            $('.gridly').append("<div id=\"" + name + "\" data-url=\"" + url + "\" class=\"brick " + size + "\" onclick=redirect(this.getAttribute('data-url')) style=\"background-color: " + color + "\"> <h1>" + name.charAt(0).toUpperCase() + "</h1><p>" + name + "</p></div>");
+            $('.gridly').append("<div id=\"" + name + "\" data-url=\"" + url + "\" class=\"brick " + size + "\" onclick=redirect(this.getAttribute('data-url')) style=\"background-color: " + color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + $('.brick').length + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + $('.brick').length + ")\" ><h1>" + name.charAt(0).toUpperCase() + "</h1><p>" + name + "</p></div>");
 
             $('.gridly').gridly();
+
+        }
+
+        function submitEditBookmarkForm() {
+
+        }
+
+        var editingBricks = false;
+
+        function editWidgets() {
+
+            if (editingBricks) {
+                endEditingWidgets();
+                return;
+            } else {
+                editingBricks = true;
+                var bricks = $('.brick');
+
+                for (var i = 0; i < bricks.length; i++) {
+                    $(bricks.get(i)).prop('onclick', null); // Removes 'onclick' property if found
+                    $(bricks.get(i)).addClass('brickEdit'); // Add edit CSS
+                }
+
+                var tinyIcons = $('.tinyIcon');
+                for (var j = 0; j < tinyIcons.length; j++) {
+                    $(tinyIcons.get(j)).removeClass('hidden');
+                    $(tinyIcons.get(j)).addClass('shown');
+                    $(tinyIcons.get(j)).hide().fadeIn("slow");
+                }
+            }
+
+
+        }
+
+        function endEditingWidgets() {
+
+            if (!editingBricks) {
+                return;
+            } else {
+                var bricks = $('.brick');
+                for (var i = 0; i < bricks.length; i++) {
+                    $(bricks.get(i)).prop('onclick', 'redirect(this.getAttribute("data-url"))'); // Adds 'onclick' property
+                    $(bricks.get(i)).removeClass('brickEdit'); // Remove edit CSS
+                }
+                var tinyIcons = $('.tinyIcon');
+                for (var j = 0; j < tinyIcons.length; j++) {
+                    $(tinyIcons.get(j)).removeClass('shown');
+                    $(tinyIcons.get(j)).addClass('hidden');
+                    $(tinyIcons.get(j)).fadeOut("slow");
+                }
+                editingBricks = false;
+            }
+        }
+
+        function editBookmark(index) {
+            var i = index;
+            var brick;
+            $.ajax({
+                url: "/data/bricks",
+                type: "GET",
+                success: function (data) {
+                    console.log(data.bricks.bricks[index]);
+                    brick = data.bricks.bricks[index];
+                    $('.circle').removeClass('selectedCircle');
+                    try {
+                        $('.circle.' + brick.color).addClass('selectedCircle');
+                    } catch (err) {
+                        setRandomSelectedCircle();
+                    }
+
+                    $('#editBookmarkModal').modal('show');
+                    $('#editBookmarkURL').val(brick.url);
+                    $('#editBookmarkName').val(brick.name);
+
+                }
+            })
+
+        }
+
+        function removeBookmark(index) {
+
+            $.ajax({
+                url: "/removeBrick",
+                type: "POST",
+                data: { index: index },
+                success: function (data) {
+                    $('.gridly').html('');
+                    for (var i = 0; i < data.bricks.bricks.length; i++) {
+                        console.log(data.bricks.bricks[i].name)
+                        var html = "<div id=\"" + data.bricks.bricks[i].name + "\" data-url=\"" + data.bricks.bricks[i].url + "\" class=\"brick " + data.bricks.bricks[i].size + " hover\" onclick=\"redirect(this.getAttribute('data-url'))\" style=\"background-color: " + data.bricks.bricks[i].color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + i + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + i + ")\" ><h1>" + data.bricks.bricks[i].name.charAt(0).toUpperCase() + "</h1><p>" + data.bricks.bricks[i].name + "</p></div>";
+                        document.getElementById("gridlyContainer").innerHTML += html;
+                        $('.gridly').gridly();
+                    }
+                }
+            })
 
         }
 
@@ -255,7 +344,7 @@
                     <br>
                     <h4 class="mt-3">Bookmarks</h4>
                     <br>
-                    <img style="z-index:-1" src="res/bookmark.png" width="42" height="60" alt=""></img>
+                    <img src="res/bookmark.png" width="42" height="60" alt=""></img>
                 </div>
                 <div class="mx-3 mb-3 widgetBlock">
                     widget
@@ -339,16 +428,68 @@
         </div>
     </div>
 
+    <!-- Edit Bookmark Modal -->
+    <div class="modal fade" id="editBookmarkModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <h3 style="color: #11b8ff;">Options</h3>
+                    <br>
+                    <div class="row" style="display:block;">
+                        <form id="editBookmarkForm" action="/editBookmark" method="post" class="mx-5">
+                            <p>URL</p>
+                            <input type="text" name="url" id="editBookmarkURL" />
+                            <p>Name</p>
+                            <input type="text" name="Name" id="editBookmarkName" />
+                            <input type="hidden" name="color" id="editBookmarkColor" />
+                        </form>
+                        <p class="ml-5 mb-3">Color</p>
+                        <table class="mx-5">
+                            <tr>
+                                <td>
+                                    <div class="circle green"></div>
+                                </td>
+                                <td>
+                                    <div class="circle red"></div>
+                                </td>
+                                <td>
+                                    <div class="circle yellow"></div>
+                                </td>
+                                <td>
+                                    <div class="circle blue"></div>
+                                </td>
+                                <td>
+                                    <div class="circle black"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer" style="text-align:right">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="submitEditBookmarkForm()">Save</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     <!-- BRICKS-->
 
     <div class="container" id="gridContainer">
         <div class="row main">
             <div class="col-xl-12">
-                <div class="gridly">
+                <div class="gridly" id="gridlyContainer">
                     <% for(var i=0; i<bricks.bricks.length; i++){ %>
-                        <div id="<%= bricks.bricks[i].name %>" data-url="<%= bricks.bricks[i].url %>" class="brick <%= bricks.bricks[i].size %>"
+                        <div id="<%= bricks.bricks[i].name %>" data-url="<%= bricks.bricks[i].url %>" class="brick <%= bricks.bricks[i].size %> hover"
                             onclick="redirect(this.getAttribute('data-url'))" style="background-color: <%= bricks.bricks[i].color %>">
+                            <img src="res/gear.png" class="tinyIcon hidden" alt="g" style="position: absolute; left: 5px;" onclick="editBookmark(<%- i %>)">
+                            <img src="res/cross.png" class="tinyIcon hidden" alt="x" style="position: absolute; right: 5px;" onclick="removeBookmark(<%- i %>)">
                             <h1>
                                 <%= bricks.bricks[i].name.charAt(0).toUpperCase() %>
                             </h1>
@@ -365,17 +506,16 @@
     <footer class="footer" style="background-color:rgba(0, 0, 0, 0.0);">
         <div class="bottom">
             <div onclick="showWidgetPanel()" id="gridOpts">
-                <img src="res/grid.png" width="24px" height="24px" alt="Grid">
+                <img src="res/grid.png" width="24" height="24" alt="Grid">
+            </div>
+            <div onclick="editWidgets()" id="gridOpts">
+                <img src="res/gear.png" width="36" height="36" alt="Grid">
             </div>
             <div onclick="location.href='/options'">
-                <img src="res/options.png" width="24px" height="24px" alt="Options">
+                <img src="res/options.png" width="24" height="24" alt="Options">
             </div>
         </div>
     </footer>
 </body>
-
-<script>
-    document.getElementById("search").focus();
-</script>
 
 </html>
