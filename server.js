@@ -62,6 +62,46 @@ function writeChangeToBricks() {
     });
 }
 
+
+function websiteExists(url) {
+    var exists = false;
+    try {
+        rhttp.get(url, function (resp, error) {
+            console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+            console.log("headers: ", resp.headers);
+
+            if (!error && resp.statusCode != 404) {
+                console.log("returning true for url: " + url);
+                exists = true;
+            } else {
+                exists = false;
+            }
+            return exists;
+        }).on('error', function (e) {
+            exists = false;
+        });
+    } catch (e) {
+
+    }
+
+}
+
+function getCorrectUrl(url) {
+    var httpUrl = 'http://' + url;
+    if (websiteExists(httpUrl)) {
+        console.log("retutning httpUrl " + httpUrl)
+        return httpUrl;
+    } else {
+        var httpWWWUrl = 'http://wwww.' + url;
+        if (websiteExists(httpWWWUrl)) {
+            console.log("Returning httpwww " + httpWWWUrl);
+            return httpWWWUrl;
+        } else {
+            return url;
+        }
+    }
+}
+
 app.get('/', (req, res) => {
     res.render('pages/index', { data: getImgData(), config: config, bricks: bricks });
 });
@@ -90,6 +130,66 @@ app.post('/search', (req, res) => {
     });
 
 });
+
+app.get('/redirectError', (req, res) => {
+    res.send("<h1>An error occured with redirecting</h1>")
+});
+
+app.post('/redirect', (req, res) => {
+    var url = req.body.url;
+    if(url.match('^https://')){
+     url = url.replace("https://","http://")
+    }
+    console.log(url);
+    try {
+        rhttp.get(url, function (resp, error) {
+            console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+            console.log("headers: ", resp.headers);
+
+            if (!error && resp.statusCode != 404) {
+                res.send({ url: url });
+            }
+
+        }).on('error', function(){
+            console.log("1");
+        });
+    } catch (e1) {
+        console.log("Error at first catch: "+e1);
+        try{
+            url = 'http://' + url;
+            rhttp.get(url, function (resp, error) {
+                console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+                console.log("headers: ", resp.headers);
+
+                if (!error && resp.statusCode != 404) {
+                    res.send({ url: url });
+                }
+            }).on('error', function(){
+                console.log("2");
+            });
+        } catch (e2) {
+            console.log("Error at second catch: "+e2)
+            try{
+                url = 'http://www.' + url;
+                rhttp.get(url, function (resp, error) {
+                    console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+                    console.log("headers: ", resp.headers);
+    
+                    if (!error && resp.statusCode != 404) {
+                        res.send({ url: url });
+                    }
+    
+                }).on('error', function(){
+                    console.log("3");
+                });
+            } catch (e3) {
+                res.redirect('/redirectError');
+                return;
+            }
+        }
+    }
+});
+
 
 app.post("/upload", function (req, res) {
     upload(req, res, function (err) {

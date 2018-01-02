@@ -21,7 +21,7 @@
         function timer() {
 
             // console.log('function is being called');
-            $.ajax({
+        $.ajax({
                 url: "http://localhost:1337/bg",
                 success: function (data) {
                     $('#bgi').fadeOut(function () {
@@ -207,10 +207,23 @@
 
         function redirect(url) {
             console.log("redir");
-            if (reorderingBricks)
-                return
-            else
-                window.location = url;
+            //send url to server to check if website is a valid address
+            //will then redirect correctly
+            //for example if the user has not entered http://www in front of the address
+            //it will result in a 'cannot /get 'address.com' error
+            $.ajax({
+                url: "/redirect",
+                type: "POST",
+                data: { "url": url },
+                success: function(url){
+                    //Change to https
+                    if(url.url.match('^http://')){
+                    url.url = url.url.replace("http://","https://")
+                    }
+                    window.location = url.url;
+                }
+            });
+                    
         }
 
         function submitBookmarkForm() {
@@ -248,7 +261,7 @@
                 var bricks = $('.brick');
 
                 for (var i = 0; i < bricks.length; i++) {
-                    $(bricks.get(i)).prop('onclick', null); // Removes 'onclick' property if found
+                    $(bricks.get(i)).attr('onclick', null); // Removes 'onclick' property if found
                     $(bricks.get(i)).addClass('brickEdit'); // Add edit CSS
                 }
 
@@ -270,7 +283,7 @@
             } else {
                 var bricks = $('.brick');
                 for (var i = 0; i < bricks.length; i++) {
-                    $(bricks.get(i)).prop('onclick', 'redirect(this.getAttribute("data-url"))'); // Adds 'onclick' property
+                    $(bricks.get(i)).attr('onclick', 'redirect(this.getAttribute("data-url"))'); // Adds 'onclick' property
                     $(bricks.get(i)).removeClass('brickEdit'); // Remove edit CSS
                 }
                 var tinyIcons = $('.tinyIcon');
