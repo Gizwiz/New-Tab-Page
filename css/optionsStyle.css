@@ -1,0 +1,116 @@
+#optionsText {
+    margin-top: 25%;
+}
+
+#leftMenu {
+    height: 100vh;
+    background: #d8d8d8;
+    text-align: center;
+    transition: background 1s linear, color 1s linear;
+    -webkit-transition: background 1s linear, color 1s linear;
+    -moz-transition: background 1s linear, color 1s linear;
+}
+
+.clickable {
+    padding: 10px;
+}
+
+.clickable:hover {
+    background-color: #7c7c7c;
+}
+
+.modal-content {
+    width: 200%;
+    margin-left: -50% !important;
+
+}
+
+#content {
+    margin-top: 5%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#themeImage{
+    position: fixed;
+    float: right;
+}
+
+.themeSelectionBlock{
+    border-top: 1px solid grey;
+    border-bottom: 1px solid grey;
+    background-position: left center;
+    background-color: rgba(255, 255, 255, 0.75);
+    background-blend-mode: lighten;
+    background-repeat: no-repeat;
+    -webkit-transition: background-color 1.25s; /* Safari */
+    transition: background-color 1.25s;
+}
+.themeSelectionBlock:hover{
+    background-color: rgba(255,255,255,0.15);
+    background-blend-mode: lighten;
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+.themeSelectionBlock span{
+    position: absolute;
+    bottom: 4px;
+    left: 37px;
+}
+
+.themeName{
+    font-size: 18px;
+    margin-top: 1%;
+    display: inline-block;
+}
+.themeColor{
+    display: inline-block;
+    margin-right: 5%;
+    text-align: left;
+}
+.colorSquare{
+    height: 18px;
+    width: 18px;
+    border: 1px solid black;
+    border-radius: 7px;
+    display: inline-block;
+}
+.themeImgPreview{
+    float:right;
+    width: 100%;
+    z-index: -1;
+}
+#frmUploader {
+    margin-top: 1%;
+    margin-bottom: 2%;
+    margin-right: 15%;
+    width: 100%;
+}
+
+#imgPreviewContent {
+    margin-top: 3%;
+    text-align: center;
+    margin-left: 4%;
+}
+
+.imgPreview {
+    padding: 7px;
+    display: inline-block;
+}
+
+.imgSelected {
+    border: 3px solid #11b8ff;
+}
+
+#backButton {
+    margin-top: 5%;
+    margin-bottom: -20%;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.shown {
+    visibility: visible;
+}

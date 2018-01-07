@@ -1,0 +1,249 @@
+body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+#bgi{
+    position:absolute;
+    z-index:-1;
+    height:100%;
+    -webkit-user-drag: none;
+}
+
+#clock{
+    color:white;
+    text-align:center;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+#time{
+    font-size: 7em;
+    
+}
+
+#gridContainer{
+    margin-top: 2%;
+    margin-left: 4%;
+    margin-right: 5%;
+}
+
+form{
+    margin-top:5%;
+}
+
+.bottom{
+    text-align: right;
+    width:100%;
+}
+.bottom div{
+    display:inline-block;
+}
+.bottom div{
+    margin-right: 1%;
+    display: inline-block;
+    padding-right: 5px;
+}
+.bottom img:hover{
+    cursor: pointer;
+}
+.gridOpts{
+    margin-top: 5vh;
+    position: relative;
+    right:2%;
+    width:32px;
+    height: 32px;
+}
+#opts{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    margin-right: 1%;
+    margin-top: 2%;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+#opts p{
+    margin-bottom: -2%;
+}
+.upArrow{
+    font-size: 24px;
+}
+.footer {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:60px;   /* Height of the footer */
+}
+
+.gridly {
+    position: relative;
+    width: 960px;
+    margin-top: 3%;
+}
+
+.brick{
+    text-align:center;
+    color: white;
+    text-shadow: none;
+}
+
+.brickEdit{
+    border: 2px dashed #11b8ff;
+}
+
+.hover:hover{
+    cursor: pointer;
+}
+
+.brick h1{
+    margin-top:15%;
+    margin-right:5%;
+}
+
+.brick p{
+    margin-top: 20%;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.brick.small {
+    width: 70px;
+    height: 70px;
+}
+
+.brick.large {
+    width: 300px;
+    height: 300px;
+}
+
+.expandable{
+    position:absolute;
+    height:100vh;
+    width: 25vw;
+    left: 75%;
+    top: 0;
+    background-color: #11b8ff;
+    z-index: 1;
+    display:none;
+}
+
+.expandable h2{
+    color:white;
+    text-align:center;
+    margin-top: 2%;
+}
+
+@keyframes opacityDown{
+    from {background: rgba(65,130,244,0.25);}
+    to {background: rgba(65,130,244,0.95);}
+}          
+@keyframes opacityUp{
+    from {background: rgba(65,130,244,0.95);}
+    to {background: rgba(65,130,244,0.25);}
+}
+
+.widgetBlock{
+    text-align:center;
+    background: rgba(65,130,244,0.25);
+    width: 10vw;
+    height: 10vw;
+    -webkit-transition: width 2s; /* Safari */
+    transition: background 0.5s;
+}
+
+.widgetBlock:hover{
+    background: rgba(65,130,244,0.95);
+    cursor: pointer;
+}
+
+.modal-content {
+    width: 50%;
+    margin-top: 25%;
+    margin-left: 25%;
+    text-align:center !important;
+}
+
+#bookmarkModal p{
+    margin-bottom: -1%;
+    color:black;
+    text-align: left;
+}
+#bookmarkModal input{
+    border: none;
+    border-bottom: 1px solid gray;
+    margin-bottom: 10%;
+    width:100%;
+}
+#editBookmarkModal p{
+    margin-bottom: -1%;
+    color:black;
+    text-align: left;
+}
+#editBookmarkModal input{
+    border: none;
+    border-bottom: 1px solid gray;
+    margin-bottom: 10%;
+    width:100%;
+}
+
+.circle{
+    border: 2px solid #a1a1a1;
+    padding: 10px 11px;
+    width: 2px;
+    border-radius: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 1%;
+}
+
+
+.smallCircle{
+    border: 2px solid #a1a1a1;
+    padding: 0px 9px 0px 9px;
+    width: 1px;
+    border-radius: 100%;
+    margin-left: 7%;
+    margin-right: 7%;
+    margin-bottom: -55%;
+    width: 3%;
+
+}
+
+.tinyIcon{
+    width: 17px;
+    height: 17px;
+    background: #11b8ff;
+    border-radius: 100%;
+}
+
+.theme{
+    background: #11b8ff;
+}
+.green{
+    background: green;
+}
+.red{
+    background: red;
+}
+.yellow{
+    background: yellow;
+}
+.blue{
+    background: blue;
+}
+.black{
+    background: black;
+}
+.selectedCircle{
+        border: 4px solid #11b8ff;
+}
+.hidden {
+    display: none;
+}
+
+.shown {
+    visibility: visible;
+}
