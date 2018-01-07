@@ -12,88 +12,19 @@
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="js/jquery.form.min.js"></script>
-    <style>
-        #optionsText {
-            margin-top: 25%;
-            color: #11b8ff;
-        }
-
-        #leftMenu {
-            height: 100vh;
-            background-color: #d8d8d8;
-            text-align: center;
-        }
-
-        .clickable {
-            padding: 10px;
-        }
-
-        .clickable:hover {
-            background-color: #7c7c7c;
-        }
-
-        .modal-content {
-            width: 200%;
-            margin-left: -50% !important;
-
-        }
-
-        #content {
-            margin-top: 5%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #frmUploader {
-            margin-top: 1%;
-            margin-bottom: 2%;
-            margin-right: 15%;
-            width: 100%;
-        }
-
-        #imgPreviewContent {
-            margin-top: 3%;
-            text-align: center;
-            margin-left: 4%;
-        }
-
-        .imgPreview {
-            padding: 7px;
-            display: inline-block;
-        }
-
-        .imgSelected {
-            border: 3px solid #11b8ff;
-        }
-
-        #backButton {
-            margin-top: 5%;
-            margin-bottom: -20%;
-        }
-
-        .hidden {
-            visibility: hidden;
-        }
-
-        .shown {
-            visibility: visible;
-        }
-    </style>
+    <link rel="stylesheet" href="css/optionsStyle.css">
 
 </head>
 
-<body>
-
-
-    <div class="container-fluid">
-
+<body style="background-color: <%= userTheme.mainColor %>">
+    <div class="container-fluid" id="mainContainer">
         <div class="row">
-            <div class="col-sm-2" id="leftMenu" style="border-right: 1px solid #11b8ff">
+            <div class="col-sm-2" id="leftMenu" style="border-right: 1px solid <%= userTheme.accentColor %>; background-color: <%= userTheme.secondaryColor %>; color: <%= userTheme.fontColor %>">
                 <div id="backButton">
                     <button onclick="location.href='/';" class="btn btn-default btn-lg">Back</button>
                 </div>
                 <!-- Button trigger modal -->
-                <div id="optionsText">
+                <div id="optionsText" style="color: <%= userTheme.mainColor %>">
                     <h2>Options</h2>
                 </div>
                 <div onclick="showBackgroundOptions()" class="clickable">
@@ -105,9 +36,13 @@
                 <div onclick="showWidgetOptions()" class="clickable">
                     Widgets
                 </div>
+                <div onclick="showThemeOptions()" class="clickable">
+                    Themes
+                </div>
             </div>
             <div class="col-sm-10">
                 <div class="contentWrapper">
+                    <img id="themeImg" src='themes/<%=config.theme%>/<%= userTheme.img %>' alt="" style="position: absolute; top:0; right:0; z-index:-1; max-height:100%; max-width: 100%;">
                     <div id="content">
                         <!-- js inserted dynamic content -->
                     </div>
@@ -175,24 +110,78 @@
         });
 
         function showBackgroundOptions() {
-            document.getElementById("content").innerHTML = " <p style=\"display: inline-block\">Transition time:&nbsp;</p><select id=\"timer\" onchange=\"setTimer()\"><option value=\"1\">1s</option><option value=\"2\">2s</option><option value=\"5\">5s</option><option value=\"10\">10s</option><option value=\"15\">15s</option><option value=\"20\">20s</option><option value=\"30\">30s</option><option value=\"60\">60s</option><option value=\"120\">2min</option><option value=\"300\">5min</option><option value=\"600\">10min</option><option value=\"1800\">30min</option></select><br><button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#myModal\">My pictures / Upload pictures</button>";
+            document.getElementById("content").innerHTML = "<h1 class='optionHeading'>Background Options</h1><br><p style=\"display: inline-block\">Transition time:&nbsp;</p><select id=\"timer\" onchange=\"setTimer()\"><option value=\"1\">1s</option><option value=\"2\">2s</option><option value=\"5\">5s</option><option value=\"10\">10s</option><option value=\"15\">15s</option><option value=\"20\">20s</option><option value=\"30\">30s</option><option value=\"60\">60s</option><option value=\"120\">2min</option><option value=\"300\">5min</option><option value=\"600\">10min</option><option value=\"1800\">30min</option></select><br><button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#myModal\">My pictures / Upload pictures</button>";
         }
 
         function showSettingsOptions() {
-            document.getElementById("content").innerHTML = "<h1>Settings</h1>";
+            document.getElementById("content").innerHTML = "<h1 class='optionHeading'>Settings</h1><br>";
         }
 
         function showWidgetOptions() {
-            document.getElementById("content").innerHTML = "<h1>Widget Options</h1>";
+            document.getElementById("content").innerHTML = "<h1 class='optionHeading'>Widget Options</h1><br>";
         }
 
+        function preview(name, theme){
+            if($('#themeImg').attr('src') === 'themes/'+name+'/'+theme.img){
+                //do nothing
+                //doing if(false) does not function, so doing it this way with an empty if. at least it works
+            } else {
+                $('#themeImg').hide();
+                $('#themeImg').attr('src', 'themes/'+name+'/'+theme.img);
+                $('#themeImg').fadeIn(500);
+            }
+
+            //body
+            $('body').css('color', theme.fontColor);
+            $('.optionHeading').css('color', theme.fontColor);
+
+            $leftMenu = $('#leftMenu');
+            //leftMenu bg color
+            $leftMenu.css('background-color', theme.secondaryColor);
+            //leftMenu border-right
+            $leftMenu.css('border-right', theme.accentColor);
+            //leftMenu font
+            $leftMenu.css('color', theme.fontColor);
+        }
+
+        function cancelPreview(name, theme){
+            //name, theme of original user theme
+            //name in config.theme, theme in userTheme json from ejs
+            console.log(theme.img);
+
+            if($('#themeImg').attr('src') === 'themes/'+name+'/'+theme.img){
+                //do nothing
+                //doing if(false) does not function, so doing it this way with an empty if. at least it works
+            } else {
+                $('#themeImg').hide();
+                $('#themeImg').attr('src', 'themes/'+name+'/'+theme.img);
+                $('#themeImg').fadeIn(500);
+            }
+
+            $('body').css('color', theme.fontColor);
+            $('.optionHeading').css('color', theme.fontColor);
+
+            $leftMenu = $('#leftMenu');
+            //leftMenu bg color
+            $leftMenu.css('background-color', theme.secondaryColor);
+            //leftMenu border-right
+            $leftMenu.css('border-right', theme.accentColor);
+            //leftMenu font
+            $leftMenu.css('color', theme.fontColor);
+        }
+
+        function showThemeOptions() {
+            document.getElementById("content").innerHTML = "<h1 class='optionHeading' style='color: <%= userTheme.fontColor %>'>Themes</h1><%for(var i=0; i<themes.length; i++){%><div class='themeSelectionBlock container-fluid' style='background-image: url(themes/<%= themes[i].name %>/<%=themes[i].theme.img%>);color:<%= themes[i].theme.fontColor %>' onmouseenter='preview(<%= JSON.stringify(themes[i].name) %>,<%= JSON.stringify(themes[i].theme) %>)' onmouseleave='cancelPreview(<%= JSON.stringify(config.theme) %>,<%= JSON.stringify(userTheme) %>)'><div class='row'><div class='col-sm-12'><h1 class='themeName' style='color: <%= themes[i].theme.fontColor %>'><%= themes[i].name %></h1><% if(themes[i].name===config.theme){%><h1 class='themeName' style='color: <%= themes[i].theme.fontColor %>'>&emsp;(Set)</h1><%}%></div></div><div class='row'><div class='col-sm-2'><div class='themeColor'>Main Color:<br><div class='colorSquare' style='background-color:<%= themes[i].theme.mainColor %>'></div><span><%= themes[i].theme.mainColor %></span></div></div><div class='col-sm-2'><div class='themeColor'>Secondary Color:<br><div class='colorSquare' style='background-color:<%= themes[i].theme.secondaryColor %>'></div><span><%= themes[i].theme.secondaryColor %></span></div></div><div class='col-sm-2'><div class='themeColor'>Font Color:<br><div class='colorSquare' style='background-color:<%= themes[i].theme.fontColor %>'></div><span><%= themes[i].theme.fontColor %></span></div></div><div class='col-sm-2'><div class='themeColor'>Accent Color:<br><div class='colorSquare' style='background-color:<%= themes[i].theme.accentColor %>'></div><span><%= themes[i].theme.accentColor %></span></div></div><div class='col-sm-4'></div></div></div><%}%><br>";
+        }
+        
         $(document).ready(function () {
-            showBackgroundOptions();
+            showThemeOptions();
             var time = <%= config.timer %>;
             time = (time / 1000);
             document.getElementById("timer").value = time;
-
+            setTheme();
         });
+
 
         function setTimer() {
             var e = document.getElementById("timer");
