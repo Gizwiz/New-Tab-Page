@@ -114,6 +114,7 @@
                     mouseTimeout = setTimeout(function () {
                         mouseStatus = 'longDown';
                         reorderingBricks = true;
+                        console.log("true");
                     }, 100);
                 }, false);
                 bricks[i].addEventListener("mouseup", function () {
@@ -121,6 +122,7 @@
                     setTimeout(function () {
                         mouseStatus = 'up';
                         reorderingBricks = false
+                        console.log("false");
                     }, 500)
 
                 }, false);
@@ -206,24 +208,27 @@
         }
 
         function redirect(url) {
-            console.log("redir");
-            //send url to server to check if website is a valid address
-            //will then redirect correctly
-            //for example if the user has not entered http://www in front of the address
-            //it will result in a 'cannot /get 'address.com' error
-            $.ajax({
-                url: "/redirect",
-                type: "POST",
-                data: { "url": url },
-                success: function(url){
-                    //Change to https
-                    if(url.url.match('^http://')){
-                    url.url = url.url.replace("http://","https://")
+            //if user is only dragging bricks (mouse down on brick for >100ms), do not redirect. Assume editing
+            if(reorderingBricks){
+                return;
+            } else {
+                //send url to server to check if website is a valid address
+                //will then redirect correctly
+                //for example if the user has not entered http://www in front of the address
+                //it will result in a 'cannot /get 'address.com' error
+                $.ajax({
+                    url: "/redirect",
+                    type: "POST",
+                    data: { "url": url },
+                    success: function(url){
+                        //Change to https
+                        if(url.url.match('^http://')){
+                        url.url = url.url.replace("http://","https://")
+                        }
+                        window.location = url.url;
                     }
-                    window.location = url.url;
-                }
-            });
-                    
+                });           
+          }
         }
 
         function submitBookmarkForm() {
@@ -239,7 +244,7 @@
                 data: { "brick": brick },
             });
 
-            $('.gridly').append("<div id=\"" + name + "\" data-url=\"" + url + "\" class=\"brick " + size + "\" onclick=redirect(this.getAttribute('data-url')) style=\"background-color: " + color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + $('.brick').length + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + $('.brick').length + ")\" ><h1>" + name.charAt(0).toUpperCase() + "</h1><p>" + name + "</p></div>");
+            $('.gridly').append("<div id=\"" + name + "\" data-url=\"" + url + "\" class=\"brick " + size + " hover\" onclick=redirect(this.getAttribute('data-url')) style=\"background-color: " + color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + $('.brick').length + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + $('.brick').length + ")\" ><h1>" + name.charAt(0).toUpperCase() + "</h1><p>" + name + "</p></div>");
 
             $('.gridly').gridly();
 
@@ -252,16 +257,16 @@
         var editingBricks = false;
 
         function editWidgets() {
-
+            console.log(reorderingBricks);
             if (editingBricks) {
                 endEditingWidgets();
                 return;
             } else {
                 editingBricks = true;
                 var bricks = $('.brick');
-
+                console.log(bricks);
                 for (var i = 0; i < bricks.length; i++) {
-                    $(bricks.get(i)).attr('onclick', null); // Removes 'onclick' property if found
+                    $(bricks.get(i)).prop('onclick', null); // Removes 'onclick' property if found
                     $(bricks.get(i)).addClass('brickEdit'); // Add edit CSS
                 }
 
@@ -331,7 +336,7 @@
                     $('.gridly').html('');
                     for (var i = 0; i < data.bricks.bricks.length; i++) {
                         console.log(data.bricks.bricks[i].name)
-                        var html = "<div id=\"" + data.bricks.bricks[i].name + "\" data-url=\"" + data.bricks.bricks[i].url + "\" class=\"brick " + data.bricks.bricks[i].size + " hover\" onclick=\"redirect(this.getAttribute('data-url'))\" style=\"background-color: " + data.bricks.bricks[i].color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + i + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + i + ")\" ><h1>" + data.bricks.bricks[i].name.charAt(0).toUpperCase() + "</h1><p>" + data.bricks.bricks[i].name + "</p></div>";
+                        var html = "<div id=\"" + data.bricks.bricks[i].name + "\" data-url=\"" + data.bricks.bricks[i].url + "\" class=\"brick " + data.bricks.bricks[i].size + " hover brickEdit\" onclick=\"redirect(this.getAttribute('data-url'))\" style=\"background-color: " + data.bricks.bricks[i].color + "\"><img src=\"res/gear.png\" class=\"tinyIcon shown\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + i + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon shown\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + i + ")\" ><h1>" + data.bricks.bricks[i].name.charAt(0).toUpperCase() + "</h1><p>" + data.bricks.bricks[i].name + "</p></div>";
                         document.getElementById("gridlyContainer").innerHTML += html;
                         $('.gridly').gridly();
                     }
@@ -515,20 +520,34 @@
             </div>
         </div>
     </div>
+    <div id="opts">
+            <p><span class="upArrow">&#8657</span>Options<span class="upArrow">&#8657</span></p>
+    </div>
+    <footer class="footer container-fluid" id="ops" style="background-color:rgba(0, 0, 0, 0.0); height: 100px;">
+            <div class="row" style="height:100%">
+                    <div class="col-sm-11" id="footerLeftPanel"></div>
+                    <div class="col-sm-1" id="footerRightPanel">
+                            <div class="bottom" style="display: none; background-color:rgba(0,0,0,0.0);height:100%;margin-left: 5%;">
+                                    <div onclick="showWidgetPanel()" class="gridOpts">
+                                        <img src="res/grid2.png" width="24" height="24" alt="Grid">
+                                    </div>
+                                    <div onclick="editWidgets()" class="gridOpts" data-toggle="tooltip">
+                                        <img src="res/gear2.png" width="28" height="32" alt="Grid">
+                                    </div>
+                                    <div onclick="location.href='/options'" class="gridOpts" data-toggle="tooltip"> 
+                                        <img src="res/wrench.png" width="28" height="32" alt="Options">
+                                    </div>
+                            </div>
+                    </div>
 
-    <footer class="footer" style="background-color:rgba(0, 0, 0, 0.0);">
-        <div class="bottom">
-            <div onclick="showWidgetPanel()" id="gridOpts">
-                <img src="res/grid.png" width="24" height="24" alt="Grid">
-            </div>
-            <div onclick="editWidgets()" id="gridOpts">
-                <img src="res/gear.png" width="36" height="36" alt="Grid">
-            </div>
-            <div onclick="location.href='/options'">
-                <img src="res/options.png" width="24" height="24" alt="Options">
-            </div>
-        </div>
-    </footer>
+                </div>
+
+        </footer>
+    <script>
+    //If side scrollbar shows,  overflow-y must be hidden. set in the body rule of indStyle.css
+    $('#footerRightPanel').hover(function() {$('.bottom').show("slide", {direction: "down"}, 250);$('#opts').hide("slide", {direction: "up"}, 250)}, function() {$('.bottom').hide("slide", {direction: "down"}, 250);$('#opts').show("slide", {direction: "up"}, 250)});
+
+    </script>
 </body>
 
 </html>
