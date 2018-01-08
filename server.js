@@ -54,7 +54,7 @@ svc.on('uninstall',function(){
 
 
 */
-
+let server = {};
 const express = require('express');
 const app = require('express')();
 const bodyParser = require('body-parser');
@@ -141,46 +141,6 @@ function writeChangeToBricks() {
     });
 }
 
-
-function websiteExists(url) {
-    var exists = false;
-    try {
-        rhttp.get(url, function (resp, error) {
-            console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
-            console.log("headers: ", resp.headers);
-
-            if (!error && resp.statusCode != 404) {
-                console.log("returning true for url: " + url);
-                exists = true;
-            } else {
-                exists = false;
-            }
-            return exists;
-        }).on('error', function (e) {
-            exists = false;
-        });
-    } catch (e) {
-
-    }
-
-}
-
-function getCorrectUrl(url) {
-    var httpUrl = 'http://' + url;
-    if (websiteExists(httpUrl)) {
-        console.log("retutning httpUrl " + httpUrl)
-        return httpUrl;
-    } else {
-        var httpWWWUrl = 'http://wwww.' + url;
-        if (websiteExists(httpWWWUrl)) {
-            console.log("Returning httpwww " + httpWWWUrl);
-            return httpWWWUrl;
-        } else {
-            return url;
-        }
-    }
-}
-
 function getThemeInfo(){
     return theme;
 }
@@ -215,65 +175,63 @@ app.post('/search', (req, res) => {
 
 });
 
-app.get('/redirectError', (req, res) => {
-    res.send("<h1>An error occured with redirecting</h1>")
-});
 
 app.post('/redirect', (req, res) => {
     var url = req.body.url;
     if(url.match('^https://')){
      url = url.replace("https://","http://")
     }
-    console.log(url);
     try {
         rhttp.get(url, function (resp, error) {
-            console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
-            console.log("headers: ", resp.headers);
+           // console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+            //console.log("headers: ", resp.headers);
 
             if (!error && resp.statusCode != 404) {
-                res.send({ url: url });
+               res.send({ url: url });
+               return true;
             }
 
         }).on('error', function(){
-            console.log("1");
+            return res.send({url:null});
         });
     } catch (e1) {
-        console.log("Error at first catch: "+e1);
         try{
             url = 'http://' + url;
             rhttp.get(url, function (resp, error) {
-                console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
-                console.log("headers: ", resp.headers);
+                //console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+                //console.log("headers: ", resp.headers);
 
                 if (!error && resp.statusCode != 404) {
-                    res.send({ url: url });
+                    return res.send({ url: url });
                 }
             }).on('error', function(){
-                console.log("2");
+                return res.send({url:null});
             });
         } catch (e2) {
-            console.log("Error at second catch: "+e2)
             try{
                 url = 'http://www.' + url;
                 rhttp.get(url, function (resp, error) {
-                    console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
-                    console.log("headers: ", resp.headers);
+                   //console.log("statusCode: ", resp.statusCode); // <======= Here's the status code
+                    //console.log("headers: ", resp.headers);
     
                     if (!error && resp.statusCode != 404) {
-                        res.send({ url: url });
+                        console.log("success with "+url)
+                        return res.send({ url: url });
                     }
     
                 }).on('error', function(){
-                    console.log("3");
+                    return res.send({url: null});
                 });
             } catch (e3) {
-                res.redirect('/redirectError');
-                return;
+                return res.send({url:null});
             }
         }
     }
 });
 
+app.get('/redirect/404', (req, res) => {
+    res.send("<h1>An error occured with redirecting</h1>")
+});
 
 app.post("/upload", (req, res) => {
     upload(req, res, function (err) {
@@ -299,6 +257,7 @@ app.post("/bricks", (req, res) => {
 app.post("/bookmark", (req, res) => {
     bricks.bricks.push(req.body.brick);
     writeChangeToBricks();
+    return res.send({bricks:bricks});
 });
 
 app.post("/editBookmark", (req, res) => {
@@ -334,3 +293,8 @@ app.get('/theme/img', (req, res)=>{
 http.listen(1337, () => {
     console.log('listening on 1337');
 });
+console.log(bricks.bricks.length);
+server.bricks = bricks;
+server.config = config;
+server.theme = theme;
+module.exports = server;
