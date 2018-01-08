@@ -9,6 +9,7 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.bundle.js"></script>
     <script src="js/jquery.gridly.js" type="text/javascript"></script>
+    <script src="js/indexScript.js" type="text/javascript"></script>
     <link href="css/jquery.gridly.css" rel="stylesheet" type="text/css" />
     <link href="css/indStyle.css" rel="stylesheet" type="text/css" />
     <script src="components/jquery-ui-1.12.1/jquery-ui.js"></script>
@@ -18,9 +19,7 @@
 <body>
     <script>
 
-        function timer() {
-
-            // console.log('function is being called');
+    function timer() {
         $.ajax({
                 url: "http://localhost:1337/bg",
                 success: function (data) {
@@ -38,312 +37,6 @@
 
         var time = <%= config.timer %>;
         setInterval(timer, time);
-
-        function startClock() {
-            var today = new Date();
-            var hh = today.getHours();
-            var mm = today.getMinutes();
-            hh = checkTime(hh);
-            mm = checkTime(mm);
-
-            var day = today.getDate();
-            var month = new Array();
-
-            month[0] = "January";
-            month[1] = "February";
-            month[2] = "March";
-            month[3] = "April";
-            month[4] = "May";
-            month[5] = "June";
-            month[6] = "July";
-            month[7] = "August";
-            month[8] = "September";
-            month[9] = "October";
-            month[10] = "November";
-            month[11] = "December";
-
-            var monthName = month[today.getMonth()];
-            var year = today.getFullYear();
-
-            document.getElementById("time").innerHTML = hh + ":" + mm;
-            document.getElementById("date").innerHTML = day + " " + monthName + " " + year;
-            var t = setTimeout(startClock, 500);
-        }
-
-        function checkTime(i) {
-            if (i < 10) { i = "0" + i };
-            return i;
-        }
-
-        function r(f) { /in/.test(document.readyState) ? setTimeout('r(' + f + ')', 9) : f() }
-        r(function () {
-            startClock();
-
-            setRandomSelectedCircle();
-
-            document.getElementById("search").focus();
-
-            $('.gridly').gridly({
-                base: 20, // px 
-                gutter: 30, // px
-                columns: 12,
-                callbacks: { reordering: reordering, reordered: reordered }
-            });
-
-            $('.circle').click(function (e) {
-                console.log(e.target);
-                if ($(e.target).hasClass('selectedCircle')) {
-                    return;
-                } else {
-                    $('.circle').removeClass('selectedCircle');
-                    $(e.target).addClass('selectedCircle');
-                    $('#bookmarkColor').val($(e.target).attr('class').split(' ')[1]);
-                }
-            });
-
-
-            var mouseStatus = 'up';
-            var mouseTimeout;
-
-            var bricks = document.getElementsByClassName("brick");
-
-            for (var i = 0; i < bricks.length; i++) {
-                bricks[i].addEventListener("mousedown", function () {
-                    //clearTimeout(mouseInterval);
-                    mouseStatus = 'down';
-                    mouseTimeout = setTimeout(function () {
-                        mouseStatus = 'longDown';
-                        reorderingBricks = true;
-                        console.log("true");
-                    }, 100);
-                }, false);
-                bricks[i].addEventListener("mouseup", function () {
-                    clearTimeout(mouseTimeout);
-                    setTimeout(function () {
-                        mouseStatus = 'up';
-                        reorderingBricks = false
-                        console.log("false");
-                    }, 500)
-
-                }, false);
-
-            }
-
-        });
-
-        function setRandomSelectedCircle() {
-            $('.circle').removeClass('selectedCircle');
-            var selected = Math.floor((Math.random() * $('.circle').length));
-            $($('.circle').get(selected)).addClass('selectedCircle');
-        }
-
-        function isEquivalent(a, b) {
-            // Create arrays of property names
-            var aProps = Object.getOwnPropertyNames(a);
-            var bProps = Object.getOwnPropertyNames(b);
-
-            // If number of properties is different,
-            // objects are not equivalent
-            if (aProps.length != bProps.length) {
-                return false;
-            }
-
-            for (var i = 0; i < aProps.length; i++) {
-                var propName = aProps[i];
-
-                // If values of same property are not equal,
-                // objects are not equivalent
-                if (a[propName] !== b[propName]) {
-                    return false;
-                }
-            }
-
-            // If we made it this far, objects
-            // are considered equivalent
-            return true;
-        }
-
-
-        var elements = [];
-        var reorderingBricks = false;
-
-
-        //set order of elements
-        var reordering = function ($elements) {
-            elements = $elements;
-        };
-
-        //check if order of elements has changed.
-        //if no, return
-        //if yes, post to server and write changes
-        var reordered = function ($elements) {
-            if (isEquivalent($elements, elements)) {
-                return;
-            } else {
-                var bricks = [];
-                for (var i = 0; i < $elements.length; i++) {
-                    var name = $elements[i].id;
-                    var url = $elements[i].getAttribute('data-url');
-                    var color = $elements[i].style.backgroundColor;
-                    var size = $elements[i].className.split(' ')[1];
-                    var json = { name: name, url: url, color: color, size: size };
-                    bricks.push(json);
-                }
-                $.ajax({
-                    url: "/bricks",
-                    type: "POST",
-                    data: { "bricks": bricks }
-                });
-            }
-
-        };
-
-        function showWidgetPanel() {
-            $(".expandable").show('slide', { direction: "right" }, 500);
-        }
-
-        function hideWidgetPanel() {
-            $(".expandable").hide('slide', { direction: 'right' }, 500);
-            endEditingWidgets();
-        }
-
-        function redirect(url) {
-            //if user is only dragging bricks (mouse down on brick for >100ms), do not redirect. Assume editing
-            if(reorderingBricks){
-                return;
-            } else {
-                //send url to server to check if website is a valid address
-                //will then redirect correctly
-                //for example if the user has not entered http://www in front of the address
-                //it will result in a 'cannot /get 'address.com' error
-                $.ajax({
-                    url: "/redirect",
-                    type: "POST",
-                    data: { "url": url },
-                    success: function(url){
-                        //Change to https
-                        if(url.url.match('^http://')){
-                        url.url = url.url.replace("http://","https://")
-                        }
-                        window.location = url.url;
-                    }
-                });           
-          }
-        }
-
-        function submitBookmarkForm() {
-            var name = $('#bookmarkName').val();
-            var url = $('#bookmarkURL').val();
-            var color = $('#bookmarkColor').val();
-            var size = "small";
-            var brick = { name: name, url: url, color: color, size: size };
-            var bJSON = JSON.stringify(brick);
-            $.ajax({
-                url: "/bookmark",
-                type: "POST",
-                data: { "brick": brick },
-            });
-
-            $('.gridly').append("<div id=\"" + name + "\" data-url=\"" + url + "\" class=\"brick " + size + " hover\" onclick=redirect(this.getAttribute('data-url')) style=\"background-color: " + color + "\"><img src=\"res/gear.png\" class=\"tinyIcon hidden\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + $('.brick').length + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon hidden\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + $('.brick').length + ")\" ><h1>" + name.charAt(0).toUpperCase() + "</h1><p>" + name + "</p></div>");
-
-            $('.gridly').gridly();
-
-        }
-
-        function submitEditBookmarkForm() {
-
-        }
-
-        var editingBricks = false;
-
-        function editWidgets() {
-            console.log(reorderingBricks);
-            if (editingBricks) {
-                endEditingWidgets();
-                return;
-            } else {
-                editingBricks = true;
-                var bricks = $('.brick');
-                console.log(bricks);
-                for (var i = 0; i < bricks.length; i++) {
-                    $(bricks.get(i)).prop('onclick', null); // Removes 'onclick' property if found
-                    $(bricks.get(i)).addClass('brickEdit'); // Add edit CSS
-                }
-
-                var tinyIcons = $('.tinyIcon');
-                for (var j = 0; j < tinyIcons.length; j++) {
-                    $(tinyIcons.get(j)).removeClass('hidden');
-                    $(tinyIcons.get(j)).addClass('shown');
-                    $(tinyIcons.get(j)).hide().fadeIn("slow");
-                }
-            }
-
-
-        }
-
-        function endEditingWidgets() {
-
-            if (!editingBricks) {
-                return;
-            } else {
-                var bricks = $('.brick');
-                for (var i = 0; i < bricks.length; i++) {
-                    $(bricks.get(i)).attr('onclick', 'redirect(this.getAttribute("data-url"))'); // Adds 'onclick' property
-                    $(bricks.get(i)).removeClass('brickEdit'); // Remove edit CSS
-                }
-                var tinyIcons = $('.tinyIcon');
-                for (var j = 0; j < tinyIcons.length; j++) {
-                    $(tinyIcons.get(j)).removeClass('shown');
-                    $(tinyIcons.get(j)).addClass('hidden');
-                    $(tinyIcons.get(j)).fadeOut("slow");
-                }
-                editingBricks = false;
-            }
-        }
-
-        function editBookmark(index) {
-            var i = index;
-            var brick;
-            $.ajax({
-                url: "/data/bricks",
-                type: "GET",
-                success: function (data) {
-                    console.log(data.bricks.bricks[index]);
-                    brick = data.bricks.bricks[index];
-                    $('.circle').removeClass('selectedCircle');
-                    try {
-                        $('.circle.' + brick.color).addClass('selectedCircle');
-                    } catch (err) {
-                        setRandomSelectedCircle();
-                    }
-
-                    $('#editBookmarkModal').modal('show');
-                    $('#editBookmarkURL').val(brick.url);
-                    $('#editBookmarkName').val(brick.name);
-
-                }
-            })
-
-        }
-
-        function removeBookmark(index) {
-
-            $.ajax({
-                url: "/removeBrick",
-                type: "POST",
-                data: { index: index },
-                success: function (data) {
-                    $('.gridly').html('');
-                    for (var i = 0; i < data.bricks.bricks.length; i++) {
-                        console.log(data.bricks.bricks[i].name)
-                        var html = "<div id=\"" + data.bricks.bricks[i].name + "\" data-url=\"" + data.bricks.bricks[i].url + "\" class=\"brick " + data.bricks.bricks[i].size + " hover brickEdit\" onclick=\"redirect(this.getAttribute('data-url'))\" style=\"background-color: " + data.bricks.bricks[i].color + "\"><img src=\"res/gear.png\" class=\"tinyIcon shown\" alt=\"g\" style=\"position: absolute; left: 5px;\" onclick=\"editBookmark(" + i + ")\" ><img src=\"res/cross.png\" class=\"tinyIcon shown\" alt=\"x\" style=\"position: absolute; right: 5px;\" onclick=\"removeBookmark(" + i + ")\" ><h1>" + data.bricks.bricks[i].name.charAt(0).toUpperCase() + "</h1><p>" + data.bricks.bricks[i].name + "</p></div>";
-                        document.getElementById("gridlyContainer").innerHTML += html;
-                        $('.gridly').gridly();
-                    }
-                }
-            })
-
-        }
 
     </script>
 
@@ -521,31 +214,34 @@
         </div>
     </div>
     <div id="opts">
-            <p><span class="upArrow">&#8657</span>Options<span class="upArrow">&#8657</span></p>
+        <p>
+            <span class="upArrow">&#8657</span>Options
+            <span class="upArrow">&#8657</span>
+        </p>
     </div>
     <footer class="footer container-fluid" id="ops" style="background-color:rgba(0, 0, 0, 0.0); height: 100px;">
-            <div class="row" style="height:100%">
-                    <div class="col-sm-11" id="footerLeftPanel"></div>
-                    <div class="col-sm-1" id="footerRightPanel">
-                            <div class="bottom" style="display: none; background-color:rgba(0,0,0,0.0);height:100%;margin-left: 5%;">
-                                    <div onclick="showWidgetPanel()" class="gridOpts">
-                                        <img src="res/grid2.png" width="24" height="24" alt="Grid">
-                                    </div>
-                                    <div onclick="editWidgets()" class="gridOpts" data-toggle="tooltip">
-                                        <img src="res/gear2.png" width="28" height="32" alt="Grid">
-                                    </div>
-                                    <div onclick="location.href='/options'" class="gridOpts" data-toggle="tooltip"> 
-                                        <img src="res/wrench.png" width="28" height="32" alt="Options">
-                                    </div>
-                            </div>
+        <div class="row" style="height:100%">
+            <div class="col-sm-11" id="footerLeftPanel"></div>
+            <div class="col-sm-1" id="footerRightPanel">
+                <div class="bottom" style="display: none; background-color:rgba(0,0,0,0.0);height:100%;margin-left: 5%;">
+                    <div onclick="showWidgetPanel()" class="gridOpts">
+                        <img src="res/grid2.png" width="24" height="24" alt="Grid">
                     </div>
-
+                    <div onclick="editWidgets()" class="gridOpts" data-toggle="tooltip">
+                        <img src="res/gear2.png" width="28" height="32" alt="Grid">
+                    </div>
+                    <div onclick="location.href='/options'" class="gridOpts" data-toggle="tooltip">
+                        <img src="res/wrench.png" width="28" height="32" alt="Options">
+                    </div>
                 </div>
+            </div>
 
-        </footer>
+        </div>
+
+    </footer>
     <script>
-    //If side scrollbar shows,  overflow-y must be hidden. set in the body rule of indStyle.css
-    $('#footerRightPanel').hover(function() {$('.bottom').show("slide", {direction: "down"}, 250);$('#opts').hide("slide", {direction: "up"}, 250)}, function() {$('.bottom').hide("slide", {direction: "down"}, 250);$('#opts').show("slide", {direction: "up"}, 250)});
+        //If side scrollbar shows,  overflow-y must be hidden. set in the body rule of indStyle.css
+        $('#footerRightPanel').hover(function () { $('.bottom').show("slide", { direction: "down" }, 250); $('#opts').hide("slide", { direction: "up" }, 250) }, function () { $('.bottom').hide("slide", { direction: "down" }, 250); $('#opts').show("slide", { direction: "up" }, 250) });
 
     </script>
 </body>
